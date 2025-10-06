@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyCare API Analytics Integration - Parsed Documents</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 1rem;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .tab-content h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+        }
+        
+        .tab-content h3 {
+            color: #333;
+            margin: 1.5rem 0 1rem 0;
+            font-size: 1.3rem;
+        }
+        
+        .tab-content h4 {
+            color: #555;
+            margin: 1rem 0 0.5rem 0;
+            font-size: 1.1rem;
+        }
+        
+        .tab-content p, .tab-content li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .tab-content ul {
+            margin-left: 1.5rem;
+        }
+        
+        .highlight-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .event-item {
+            margin-bottom: 0.5rem;
+            padding: 0.3rem;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                border-bottom: 1px solid #dee2e6;
+                border-right: none;
+            }
+            
+            .tab-button.active {
+                border-bottom-color: #dee2e6;
+                border-right: 3px solid #667eea;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MyCare API Analytics Integration</h1>
+            <p>Parsed Documents for Freshpaint Implementation</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('overview')">Overview</button>
+            <button class="tab-button" onclick="showTab('architecture')">Architecture</button>
+            <button class="tab-button" onclick="showTab('events')">Event Taxonomy</button>
+            <button class="tab-button" onclick="showTab('roadmap')">Roadmap</button>
+            <button class="tab-button" onclick="showTab('risks')">Risk Assessment</button>
+            <button class="tab-button" onclick="showTab('criteria')">Acceptance Criteria</button>
+            <button class="tab-button" onclick="showTab('eventlist')">Complete Event List</button>
+        </div>
+        
+        <div id="overview" class="tab-content active">
+            <h2>Executive Summary</h2>
+            <div class="highlight-box">
+                <p><strong>Key Advantage:</strong> MyCare already has a rich audit logging system with 247 stored procedures that can be leveraged for immediate analytics insights.</p>
+            </div>
+            
+            <h3>Problem Statement</h3>
+            <p><strong>Current State:</strong></p>
+            <ul>
+                <li>Rich data foundation but no analytics integration</li>
+                <li>Manual reporting required for clinical insights</li>
+                <li>Limited visibility into user behavior and workflow efficiency</li>
+                <li>Audit data exists but isn't accessible for business intelligence</li>
+            </ul>
+            
+            <h3>Product Vision</h3>
+            <p>"Transform MyCare's existing audit trail into actionable analytics insights that drive clinical outcomes, operational efficiency, and product excellence through HIPAA-compliant data intelligence."</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">247</div>
+                    <div class="stat-label">Stored Procedures</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Event Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">Strategic Themes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Week Timeline</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="architecture" class="tab-content">
+            <h2>Technical Architecture</h2>
+            
+            <h3>Data Flow</h3>
+            <div class="code-block">
+MyCare API/Frontend → Freshpaint (HIPAA Middleware) → Google Analytics 4 → GA4 Dashboards
+            </div>
+            
+            <h3>Existing Data Foundation</h3>
+            <div class="code-block">
+// AuditLog table structure (already exists)
+{
+  TableName: "Case|Patient|User|Organization|TreatmentOption|Resource",
+  AuditAction: "Insert|Update|Read|Delete", 
+  UserID: userId,
+  TableID: recordId,
+  ActivityDate: timestamp,
+  Comment: "SP_INSERT_CASE|SP_UPDATE_Patient|etc"
+}
+            </div>
+            
+            <h3>Implementation Strategy</h3>
+            <h4>Phase 1: Audit Log Integration (Week 1-2)</h4>
+            <p>Leverage existing audit trail by creating webhook/function to send audit events to Freshpaint.</p>
+            
+            <h4>Phase 2: Enhanced Event Tracking (Week 3-4)</h4>
+            <p>Add custom events to existing API endpoints for enhanced tracking.</p>
+            
+            <h4>Phase 3: Clinical Workflow Analytics (Week 5-6)</h4>
+            <p>Track complete treatment workflows and resource utilization.</p>
+        </div>
+        
+        <div id="events" class="tab-content">
+            <h2>Event Taxonomy & Strategic KPI Framework</h2>
+            
+            <h3>Event Categories</h3>
+            <div class="highlight-box">
+                <h4>Category 1: Clinical Workflow Events (From Audit Logs)</h4>
+                <p>Already captured in audit system - Case Creation, Patient Management, Treatment Planning, Resource Management, User Management</p>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>Category 2: Enhanced Clinical Analytics</h4>
+                <p>New events to add - Treatment Plan Completion, Resource Effectiveness, Workflow Efficiency, Clinical Decision Support</p>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>Category 3: User Experience Analytics</h4>
+                <p>User behavior insights - Feature Adoption, Navigation Patterns, Error Tracking, Performance Metrics</p>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>Category 4: Business Intelligence</h4>
+                <p>Organizational insights - Organization Utilization, User Onboarding, Compliance Metrics, Revenue Analytics</p>
+            </div>
+            
+            <h3>Strategic KPI Framework</h3>
+            <h4>Theme 1: Clinical Workflow Excellence</h4>
+            <p>Optimize clinical workflows for maximum efficiency and patient outcomes</p>
+            
+            <h4>Theme 2: User Experience Optimization</h4>
+            <p>Deliver exceptional user experience across all roles and organizations</p>
+            
+            <h4>Theme 3: Clinical Impact Measurement</h4>
+            <p>Measure and improve clinical outcomes through data-driven insights</p>
+            
+            <h4>Theme 4: Business Growth & Expansion</h4>
+            <p>Drive sustainable growth through data-driven product and business decisions</p>
+        </div>
+        
+        <div id="roadmap" class="tab-content">
+            <h2>Implementation Roadmap</h2>
+            
+            <h3>Phase 1: Foundation (Weeks 1-2)</h3>
+            <ul>
+                <li>Freshpaint account setup with BAA execution</li>
+                <li>Audit log webhook integration</li>
+                <li>Basic event mapping from existing audit data</li>
+                <li>GA4 integration and testing</li>
+            </ul>
+            
+            <h3>Phase 2: Enhanced Tracking (Weeks 3-4)</h3>
+            <ul>
+                <li>Custom event tracking in API endpoints</li>
+                <li>Clinical workflow instrumentation</li>
+                <li>Performance monitoring integration</li>
+                <li>Error tracking implementation</li>
+            </ul>
+            
+            <h3>Phase 3: Advanced Analytics (Weeks 5-6)</h3>
+            <ul>
+                <li>GA4 strategic KPI reports and explorations</li>
+                <li>Clinical impact metrics in GA4</li>
+                <li>User experience analytics in GA4</li>
+                <li>Business intelligence reporting via GA4</li>
+            </ul>
+            
+            <h3>Phase 4: Optimization (Weeks 7-8)</h3>
+            <ul>
+                <li>GA4 report optimization and performance tuning</li>
+                <li>Advanced GA4 analytics features</li>
+                <li>Stakeholder training on GA4 interface</li>
+                <li>Production monitoring and alerting via GA4</li>
+            </ul>
+            
+            <h3>Performance Requirements</h3>
+            <ul>
+                <li>Dashboard Load Time: &lt;5 seconds</li>
+                <li>Data Freshness: &lt;30 seconds from audit event to dashboard</li>
+                <li>Uptime: 99.9% availability</li>
+                <li>Error Rate: &lt;0.1% for event tracking</li>
+            </ul>
+        </div>
+        
+        <div id="risks" class="tab-content">
+            <h2>Risk Assessment & Mitigation</h2>
+            
+            <h3>High-Risk Items</h3>
+            <div class="highlight-box">
+                <h4>PHI Exposure (Critical Impact, Low Probability)</h4>
+                <p>Mitigation: Leverage existing audit sanitization, automated compliance checks</p>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>Performance Impact (High Impact, Medium Probability)</h4>
+                <p>Mitigation: Async processing, batch operations, performance monitoring</p>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>Data Volume (High Impact, Medium Probability)</h4>
+                <p>Mitigation: Efficient querying, pagination, data archiving strategies</p>
+            </div>
+            
+            <h3>Success Metrics</h3>
+            <h4>Technical Success Metrics</h4>
+            <ul>
+                <li>Integration Success: 100% audit events captured and processed</li>
+                <li>Performance: &lt;5 second dashboard load time, 99.9% uptime</li>
+                <li>Data Quality: Zero PHI exposure, 100% environment separation</li>
+                <li>Implementation Speed: 6-week delivery timeline</li>
+            </ul>
+            
+            <h4>Business Success Metrics</h4>
+            <ul>
+                <li>Stakeholder Adoption: &gt;80% weekly usage of analytics dashboard</li>
+                <li>Decision Speed: 50% faster product decisions based on data insights</li>
+                <li>Clinical Impact: Measurable improvement in workflow efficiency</li>
+                <li>Compliance Score: 100% HIPAA compliance maintained</li>
+            </ul>
+        </div>
+        
+        <div id="criteria" class="tab-content">
+            <h2>Acceptance Criteria</h2>
+            
+            <h3>Phase 1 Acceptance Criteria</h3>
+            <ul>
+                <li>Freshpaint account created and BAA executed</li>
+                <li>Audit log webhook integration operational</li>
+                <li>Basic events flowing from existing audit data</li>
+                <li>GA4 integration configured and validated</li>
+                <li>No PHI exposure in any analytics events</li>
+            </ul>
+            
+            <h3>Phase 2 Acceptance Criteria</h3>
+            <ul>
+                <li>Custom event tracking added to key API endpoints</li>
+                <li>Clinical workflow instrumentation complete</li>
+                <li>Performance monitoring operational</li>
+                <li>Error tracking and alerting configured</li>
+                <li>Data quality validation passed</li>
+            </ul>
+            
+            <h3>Phase 3 Acceptance Criteria</h3>
+            <ul>
+                <li>GA4 strategic KPI reports functional</li>
+                <li>Clinical impact metrics implemented in GA4</li>
+                <li>User experience analytics operational in GA4</li>
+                <li>Business intelligence reporting available via GA4</li>
+                <li>GA4 audience segmentation configured</li>
+            </ul>
+            
+            <h3>Phase 4 Acceptance Criteria</h3>
+            <ul>
+                <li>GA4 report performance optimized (&lt;5 second load)</li>
+                <li>Stakeholder training on GA4 interface completed</li>
+                <li>Production monitoring operational via GA4</li>
+                <li>&gt;80% stakeholder adoption of GA4 reports achieved</li>
+                <li>Complete audit trail integration verified</li>
+            </ul>
+            
+            <h3>Key Advantages of This Approach</h3>
+            <ol>
+                <li><strong>Immediate Value:</strong> Leverage existing audit data for instant analytics</li>
+                <li><strong>Rich Context:</strong> Medical workflow data provides deeper insights than typical SaaS apps</li>
+                <li><strong>Compliance-Ready:</strong> Built on existing HIPAA-compliant audit framework</li>
+                <li><strong>Multi-tenant:</strong> Organization-level analytics with role-based insights</li>
+                <li><strong>Scalable:</strong> Foundation supports future advanced analytics features</li>
+                <li><strong>Cost-Effective:</strong> Maximize existing infrastructure investment</li>
+            </ol>
+        </div>
+        
+        <div id="eventlist" class="tab-content">
+            <h2>Complete List of Trackable Events</h2>
+            <p><strong>Total Events Available:</strong> 247 stored procedures = 247 trackable events</p>
+            
+            <h3>Case Management Events (47 procedures)</h3>
+            <div class="event-list">
+                <div class="event-item">'SP_INSERT_CASE' → 'case_created'</div>
+                <div class="event-item">'SP_UPDATE_CASE' → 'case_updated'</div>
+                <div class="event-item">'SP_DELETE_CASE' → 'case_deleted'</div>
+                <div class="event-item">'SP_GET_CASE' → 'case_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_USER' → 'cases_listed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_ORGANIZATION' → 'organization_cases_listed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_MODULE' → 'module_cases_listed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_STATUS' → 'cases_by_status_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_DATE_RANGE' → 'cases_by_date_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_PATIENT' → 'patient_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_TREATMENT' → 'treatment_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_RESOURCE' → 'resource_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_NOTE' → 'note_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_ATTACHMENT' → 'attachment_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_DIAGNOSIS' → 'diagnosis_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_STAGING' → 'staging_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_GRADE' → 'grade_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_AGE' → 'age_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_GENDER' → 'gender_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_ETHNICITY' → 'ethnicity_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_INSURANCE' → 'insurance_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_LOCATION' → 'location_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_SPECIALIST' → 'specialist_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_REFERRAL' → 'referral_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_FOLLOWUP' → 'followup_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_OUTCOME' → 'outcome_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_COMPLICATION' → 'complication_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_SIDE_EFFECT' → 'side_effect_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_QUALITY_OF_LIFE' → 'quality_of_life_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_SURVIVAL' → 'survival_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_RECURRENCE' → 'recurrence_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_METASTASIS' → 'metastasis_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_TREATMENT_RESPONSE' → 'treatment_response_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_BIOMARKER' → 'biomarker_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_GENETIC' → 'genetic_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_FAMILY_HISTORY' → 'family_history_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_LIFESTYLE' → 'lifestyle_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_ENVIRONMENTAL' → 'environmental_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_OCCUPATIONAL' → 'occupational_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_MEDICATION' → 'medication_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_ALLERGY' → 'allergy_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_VACCINATION' → 'vaccination_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_SCREENING' → 'screening_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_PREVENTION' → 'prevention_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_EDUCATION' → 'education_cases_viewed'</div>
+                <div class="event-item">'SP_GET_CASES_BY_SUPPORT' → 'support_cases_viewed'</div>
+            </div>
+            
+            <h3>Patient Management Events (35 procedures)</h3>
+            <div class="event-list">
+                <div class="event-item">'SP_INSERT_Patient' → 'patient_created'</div>
+                <div class="event-item">'SP_UPDATE_Patient' → 'patient_updated'</div>
+                <div class="event-item">'SP_DELETE_Patient' → 'patient_deleted'</div>
+                <div class="event-item">'SP_GET_Patient' → 'patient_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_USER' → 'patients_listed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_ORGANIZATION' → 'organization_patients_listed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_MODULE' → 'module_patients_listed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_AGE' → 'patients_by_age_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_GENDER' → 'patients_by_gender_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_ETHNICITY' → 'patients_by_ethnicity_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_INSURANCE' → 'patients_by_insurance_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_LOCATION' → 'patients_by_location_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_DIAGNOSIS' → 'patients_by_diagnosis_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_STAGING' → 'patients_by_staging_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_GRADE' → 'patients_by_grade_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_TREATMENT' → 'patients_by_treatment_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_OUTCOME' → 'patients_by_outcome_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_SURVIVAL' → 'patients_by_survival_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_RECURRENCE' → 'patients_by_recurrence_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_METASTASIS' → 'patients_by_metastasis_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_BIOMARKER' → 'patients_by_biomarker_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_GENETIC' → 'patients_by_genetic_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_FAMILY_HISTORY' → 'patients_by_family_history_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_LIFESTYLE' → 'patients_by_lifestyle_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_ENVIRONMENTAL' → 'patients_by_environmental_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_OCCUPATIONAL' → 'patients_by_occupational_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_MEDICATION' → 'patients_by_medication_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_ALLERGY' → 'patients_by_allergy_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_VACCINATION' → 'patients_by_vaccination_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_SCREENING' → 'patients_by_screening_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_PREVENTION' → 'patients_by_prevention_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_EDUCATION' → 'patients_by_education_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_SUPPORT' → 'patients_by_support_viewed'</div>
+                <div class="event-item">'SP_GET_Patients_BY_QUALITY_OF_LIFE' → 'patients_by_quality_of_life_viewed'</div>
+            </div>
+            
+            <h3>User Role Mapping</h3>
+            <div class="code-block">
+const userRoleMapping = {
+  1: 'APP',
+  2: 'MCG_Administrator',
+  3: 'Auditor',
+  4: 'Nurse',
+  5: 'Administrator',
+  6: 'Physician',
+  7: 'Scribe',
+  8: 'Patient',
+  9: 'CareGiver'
+};
+            </div>
+            
+            <h3>Clinical Module Mapping</h3>
+            <div class="code-block">
+const clinicalModules = {
+  'liver': 'Liver Cancer Module',
+  'lung': 'Lung Cancer Module',
+  'brain': 'Brain Cancer Module',
+  'prostate': 'Prostate Cancer Module',
+  'breast': 'Breast Cancer Module'
+};
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
