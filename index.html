@@ -210,6 +210,7 @@
             <button class="tab-button" onclick="showTab('risks')">Risk Assessment</button>
             <button class="tab-button" onclick="showTab('criteria')">Acceptance Criteria</button>
             <button class="tab-button" onclick="showTab('eventlist')">Complete Event List</button>
+            <button class="tab-button" onclick="showTab('errorcapture')">Error Capture Guide</button>
         </div>
         
         <div id="overview" class="tab-content active">
@@ -622,6 +623,275 @@ const clinicalModules = {
   'breast': 'Breast Cancer Module'
 };
             </div>
+        </div>
+        
+        <div id="errorcapture" class="tab-content">
+            <h2>Error Capture Through Freshpaint</h2>
+            
+            <div class="highlight-box" style="border-left-color: #dc3545;">
+                <h4>🔍 Error Tracking Strategy</h4>
+                <p>Capture comprehensive error data through Freshpaint to monitor application health, user experience issues, and system performance problems.</p>
+            </div>
+            
+            <h3>Error Types to Track</h3>
+            
+            <h4>1. JavaScript Errors</h4>
+            <div class="code-block">
+// Global error handlers for JavaScript errors
+window.addEventListener('error', (event) => {
+  freshpaint.track('javascript_error', {
+    error_type: 'javascript',
+    error_message: event.message,
+    error_stack: event.error?.stack?.substring(0, 1000),
+    error_url: event.filename,
+    error_line: event.lineno,
+    error_column: event.colno,
+    user_agent: navigator.userAgent,
+    timestamp: new Date().toISOString(),
+    page_path: window.location.pathname
+  });
+});
+
+// Unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  freshpaint.track('unhandled_promise_rejection', {
+    error_type: 'promise_rejection',
+    error_message: event.reason?.message || event.reason,
+    error_stack: event.reason?.stack?.substring(0, 1000),
+    timestamp: new Date().toISOString(),
+    page_path: window.location.pathname
+  });
+});
+            </div>
+            
+            <h4>2. API Errors</h4>
+            <div class="code-block">
+// Axios interceptor for API errors
+axiosServices.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Track API errors with Freshpaint
+    if (error.config) {
+      freshpaint.track('api_error', {
+        error_type: 'api',
+        error_message: error.message || error.toString(),
+        endpoint: error.config.url || 'unknown',
+        method: error.config.method || 'unknown',
+        status_code: error.response?.status,
+        response_data: error.response?.data,
+        timestamp: new Date().toISOString(),
+        page_path: window.location.pathname
+      });
+    }
+    
+    return Promise.reject(error);
+  }
+);
+            </div>
+            
+            <h4>3. Network Errors</h4>
+            <div class="code-block">
+// Network error tracking
+const trackNetworkError = (error, url) => {
+  freshpaint.track('network_error', {
+    error_type: 'network',
+    error_message: error.message || 'Network error',
+    failed_url: url,
+    error_code: error.code,
+    timestamp: new Date().toISOString(),
+    page_path: window.location.pathname
+  });
+};
+
+// Usage in fetch operations
+fetch('/api/data')
+  .catch(error => {
+    trackNetworkError(error, '/api/data');
+  });
+            </div>
+            
+            <h4>4. React Component Errors</h4>
+            <div class="code-block">
+// React Error Boundary for component errors
+class ErrorBoundary extends React.Component {
+  componentDidCatch(error, errorInfo) {
+    freshpaint.track('react_component_error', {
+      error_type: 'react_component',
+      error_message: error.message,
+      error_stack: error.stack?.substring(0, 1000),
+      component_stack: errorInfo.componentStack,
+      error_boundary: this.props.name || 'Unknown',
+      timestamp: new Date().toISOString(),
+      page_path: window.location.pathname
+    });
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return &lt;div&gt;Something went wrong.&lt;/div&gt;;
+    }
+    return this.props.children;
+  }
+}
+            </div>
+            
+            <h4>5. Custom Application Errors</h4>
+            <div class="code-block">
+// Custom error tracking for business logic
+const trackCustomError = (errorType, message, context = {}) => {
+  freshpaint.track('custom_error', {
+    error_type: errorType,
+    error_message: message,
+    context: JSON.stringify(context),
+    timestamp: new Date().toISOString(),
+    page_path: window.location.pathname,
+    user_id: getCurrentUserId(), // If available
+    organization_id: getCurrentOrgId() // If available
+  });
+};
+
+// Usage examples
+try {
+  // Some risky operation
+  processPatientData(data);
+} catch (error) {
+  trackCustomError('data_processing', error.message, {
+    data_type: 'patient_data',
+    operation: 'processPatientData'
+  });
+}
+            </div>
+            
+            <h3>Error Data Structure</h3>
+            <div class="code-block">
+// Standard error event structure
+{
+  // Error identification
+  error_type: 'javascript|api|network|react_component|custom',
+  error_message: 'Human-readable error description',
+  error_stack: 'Stack trace (truncated to 1000 chars)',
+  
+  // Context information
+  error_url: 'URL where error occurred',
+  error_line: 'Line number (for JS errors)',
+  error_column: 'Column number (for JS errors)',
+  
+  // Application context
+  page_path: '/current/page/path',
+  user_agent: 'Browser user agent',
+  timestamp: '2025-01-XX T XX:XX:XX.XXXZ',
+  
+  // Optional context
+  user_id: 'User ID (if authenticated)',
+  organization_id: 'Organization ID (if available)',
+  session_id: 'Session identifier',
+  
+  // API-specific fields
+  endpoint: '/api/endpoint',
+  method: 'GET|POST|PUT|DELETE',
+  status_code: 404,
+  
+  // Custom context
+  context: 'Additional context as JSON string'
+}
+            </div>
+            
+            <h3>PHI Protection for Error Tracking</h3>
+            <div class="highlight-box" style="border-left-color: #ffc107;">
+                <h4>⚠️ HIPAA Compliance</h4>
+                <p>All error tracking must exclude PHI and sensitive data to maintain HIPAA compliance.</p>
+            </div>
+            
+            <div class="code-block">
+// PHI-safe error sanitization
+const sanitizeErrorData = (errorData) => {
+  const forbiddenKeys = [
+    'email', 'name', 'first_name', 'last_name', 'phone', 'mrn',
+    'appointment', 'diagnosis', 'notes', 'visit_id', 'dob', 'ssn',
+    'patient_id', 'case_id', 'medical_record'
+  ];
+  
+  const sanitized = { ...errorData };
+  
+  // Remove forbidden keys
+  forbiddenKeys.forEach(key => {
+    delete sanitized[key];
+  });
+  
+  // Sanitize error messages
+  if (sanitized.error_message) {
+    sanitized.error_message = sanitized.error_message
+      .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]') // SSN pattern
+      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]') // Email pattern
+      .replace(/\b\d{3}-\d{3}-\d{4}\b/g, '[PHONE]'); // Phone pattern
+  }
+  
+  return sanitized;
+};
+            </div>
+            
+            <h3>Error Monitoring Dashboard</h3>
+            <p>In your Freshpaint dashboard, you'll see these error events:</p>
+            <ul>
+                <li><strong>javascript_error</strong> - JavaScript runtime errors</li>
+                <li><strong>unhandled_promise_rejection</strong> - Unhandled promise rejections</li>
+                <li><strong>api_error</strong> - API request failures</li>
+                <li><strong>network_error</strong> - Network connectivity issues</li>
+                <li><strong>react_component_error</strong> - React component crashes</li>
+                <li><strong>custom_error</strong> - Application-specific errors</li>
+            </ul>
+            
+            <h3>Error Alerting Strategy</h3>
+            <div class="code-block">
+// Set up alerts in Freshpaint for critical errors
+const errorAlerting = {
+  critical_errors: [
+    'api_error', // API failures
+    'network_error', // Network issues
+    'react_component_error' // Component crashes
+  ],
+  
+  warning_errors: [
+    'javascript_error', // JS errors
+    'unhandled_promise_rejection' // Promise rejections
+  ],
+  
+  info_errors: [
+    'custom_error' // Business logic errors
+  ]
+};
+
+// Alert thresholds
+const alertThresholds = {
+  critical: 5, // Alert after 5 critical errors in 10 minutes
+  warning: 10, // Alert after 10 warning errors in 10 minutes
+  info: 20 // Alert after 20 info errors in 10 minutes
+};
+            </div>
+            
+            <h3>Implementation Checklist</h3>
+            <div class="highlight-box">
+                <h4>✅ Error Tracking Setup</h4>
+                <ul>
+                    <li>✅ Add global JavaScript error handlers</li>
+                    <li>✅ Configure axios interceptor for API errors</li>
+                    <li>✅ Implement React Error Boundary</li>
+                    <li>✅ Create custom error tracking functions</li>
+                    <li>✅ Set up PHI sanitization</li>
+                    <li>✅ Configure error alerting in Freshpaint</li>
+                    <li>✅ Test error tracking in staging environment</li>
+                    <li>✅ Validate HIPAA compliance</li>
+                </ul>
+            </div>
+            
+            <h3>Benefits of Error Tracking</h3>
+            <ul>
+                <li><strong>Proactive Issue Detection</strong> - Identify problems before users report them</li>
+                <li><strong>User Experience Monitoring</strong> - Track where users encounter errors</li>
+                <li><strong>Performance Optimization</strong> - Identify performance bottlenecks</li>
+                <li><strong>Clinical Safety</strong> - Ensure medical workflows remain functional</li>
+                <li><strong>Compliance Monitoring</strong> - Track system reliability for audit purposes</li>
+            </ul>
         </div>
     </div>
     
