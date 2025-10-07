@@ -869,6 +869,49 @@ const alertThresholds = {
 };
             </div>
             
+            <h3>How Error Tracking Actually Works</h3>
+            
+            <div class="highlight-box" style="border-left-color: #17a2b8;">
+                <h4>🔗 Important: Code vs. Connection</h4>
+                <p><strong>The code snippets below are just the tracking code.</strong> They don't automatically send data to Freshpaint. You need to set up the connection first!</p>
+            </div>
+            
+            <h4>What Happens When You Add the Code:</h4>
+            <ol>
+                <li><strong>Code captures errors</strong> - The tracking functions collect error information</li>
+                <li><strong>Code calls Freshpaint</strong> - Uses <code>freshpaint.track()</code> to send data</li>
+                <li><strong>Freshpaint receives data</strong> - But only if Freshpaint is properly configured</li>
+                <li><strong>Freshpaint sends to GA4</strong> - If GA4 destination is set up</li>
+            </ol>
+            
+            <h4>Prerequisites (Must Be Done First):</h4>
+            <div class="code-block">
+// 1. Freshpaint must be installed and configured in your app
+// This is already done in your index.html:
+&lt;script&gt;
+  freshpaint.init('YOUR_FRESHPAINT_TOKEN');
+&lt;/script&gt;
+
+// 2. Freshpaint must be connected to Google Analytics 4
+// This is done in the Freshpaint dashboard, not in code
+
+// 3. Your VITE_FRESHPAINT_WRITE_KEY must be set
+// This is already configured in your environment
+            </div>
+            
+            <h4>What the Code Snippets Do:</h4>
+            <ul>
+                <li><strong>Capture errors</strong> when they happen in your app</li>
+                <li><strong>Format error data</strong> into a standard structure</li>
+                <li><strong>Call freshpaint.track()</strong> to send the error to Freshpaint</li>
+                <li><strong>Freshpaint then sends</strong> the error data to Google Analytics 4</li>
+            </ul>
+            
+            <div class="highlight-box" style="border-left-color: #28a745;">
+                <h4>✅ Good News: You're Already Halfway There!</h4>
+                <p>Your app already has Freshpaint installed and configured. The code snippets below will just add error tracking to your existing setup.</p>
+            </div>
+            
             <h3>Step-by-Step Implementation Instructions</h3>
             
             <h4>Step 1: Update analytics.ts</h4>
@@ -1117,22 +1160,61 @@ const testErrorTracking = () => {
 };
             </div>
             
-            <h3>Implementation Checklist</h3>
-            <div class="highlight-box">
-                <h4>✅ Error Tracking Setup</h4>
+            <h3>Complete Setup Process</h3>
+            
+            <h4>Phase 1: Freshpaint Configuration (Already Done ✅)</h4>
+            <div class="highlight-box" style="border-left-color: #28a745;">
                 <ul>
-                    <li>✅ Update analytics.ts with error event types and functions</li>
-                    <li>✅ Add global error handlers to index.jsx</li>
-                    <li>✅ Configure axios interceptor for API errors</li>
-                    <li>✅ Create and implement React Error Boundary</li>
-                    <li>✅ Wrap main app component with ErrorBoundary</li>
-                    <li>✅ Add custom error tracking functions</li>
-                    <li>✅ Test error tracking in development</li>
-                    <li>✅ Validate error events in Freshpaint dashboard</li>
-                    <li>✅ Set up error alerting in Freshpaint</li>
-                    <li>✅ Test in staging environment</li>
-                    <li>✅ Validate HIPAA compliance</li>
+                    <li>✅ Freshpaint SDK installed in your app</li>
+                    <li>✅ Freshpaint initialized in index.html</li>
+                    <li>✅ VITE_FRESHPAINT_WRITE_KEY configured</li>
+                    <li>✅ Basic page view tracking working</li>
                 </ul>
+            </div>
+            
+            <h4>Phase 2: Add Error Tracking Code (Do This Next)</h4>
+            <div class="highlight-box">
+                <ul>
+                    <li>📝 Update analytics.ts with error event types and functions</li>
+                    <li>📝 Add global error handlers to index.jsx</li>
+                    <li>📝 Configure axios interceptor for API errors</li>
+                    <li>📝 Create and implement React Error Boundary</li>
+                    <li>📝 Wrap main app component with ErrorBoundary</li>
+                    <li>📝 Add custom error tracking functions</li>
+                </ul>
+            </div>
+            
+            <h4>Phase 3: Freshpaint Dashboard Setup (Do This After Code)</h4>
+            <div class="highlight-box">
+                <ul>
+                    <li>🔧 Connect Freshpaint to Google Analytics 4</li>
+                    <li>🔧 Set up GA4 properties for each environment</li>
+                    <li>🔧 Configure error event destinations</li>
+                    <li>🔧 Set up error alerting and monitoring</li>
+                </ul>
+            </div>
+            
+            <h4>Phase 4: Testing & Validation</h4>
+            <div class="highlight-box">
+                <ul>
+                    <li>🧪 Test error tracking in development</li>
+                    <li>🧪 Validate error events in Freshpaint dashboard</li>
+                    <li>🧪 Check error data in GA4 reports</li>
+                    <li>🧪 Test in staging environment</li>
+                    <li>🧪 Validate HIPAA compliance</li>
+                </ul>
+            </div>
+            
+            <h3>What You Need to Do Right Now</h3>
+            <div class="highlight-box" style="border-left-color: #ffc107;">
+                <h4>🎯 Next Steps</h4>
+                <ol>
+                    <li><strong>Add the code snippets</strong> to your files (Steps 1-7 below)</li>
+                    <li><strong>Test the code</strong> by triggering some errors</li>
+                    <li><strong>Check Freshpaint dashboard</strong> to see if error events appear</li>
+                    <li><strong>Set up GA4 connection</strong> in Freshpaint dashboard</li>
+                    <li><strong>View error data</strong> in Google Analytics 4</li>
+                </ol>
             </div>
             
             <h3>Benefits of Error Tracking</h3>
