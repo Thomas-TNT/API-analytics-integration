@@ -869,17 +869,268 @@ const alertThresholds = {
 };
             </div>
             
+            <h3>Step-by-Step Implementation Instructions</h3>
+            
+            <h4>Step 1: Update analytics.ts</h4>
+            <div class="code-block">
+// Add to src/analytics.ts
+type EventName = 'page_view' | 'cta_click' | 'javascript_error' | 'api_error' | 'network_error' | 'react_component_error' | 'custom_error';
+
+type SafeProps =
+  | { page_path: string; page_title?: string; referrer?: string }
+  | { cta_id: string }
+  | { 
+      error_type: 'javascript' | 'api' | 'network' | 'react_component' | 'custom';
+      error_message: string;
+      error_stack?: string;
+      error_url?: string;
+      error_line?: number;
+      error_column?: number;
+      user_agent?: string;
+      timestamp: string;
+      endpoint?: string;
+      method?: string;
+      status_code?: number;
+      context?: string;
+    };
+
+// Error tracking configuration
+const ERROR_TRACKING_ENABLED = true;
+const MAX_ERROR_STACK_LENGTH = 1000;
+
+// Error tracking functions
+export function trackError(error: Error, context?: Record<string, any>) {
+  if (!ERROR_TRACKING_ENABLED || !ANALYTICS_ON) return;
+  
+  const errorProps = {
+    error_type: 'javascript' as const,
+    error_message: error.message || 'Unknown error',
+    error_stack: error.stack?.substring(0, MAX_ERROR_STACK_LENGTH),
+    error_url: window.location.href,
+    user_agent: navigator.userAgent,
+    timestamp: new Date().toISOString(),
+    ...context
+  };
+  
+  track('javascript_error', errorProps);
+}
+
+export function trackApiError(error: any, endpoint: string, method: string) {
+  if (!ERROR_TRACKING_ENABLED || !ANALYTICS_ON) return;
+  
+  const errorProps = {
+    error_type: 'api' as const,
+    error_message: error.message || error.toString(),
+    error_url: window.location.href,
+    endpoint: endpoint,
+    method: method,
+    status_code: error.response?.status,
+    timestamp: new Date().toISOString()
+  };
+  
+  track('api_error', errorProps);
+}
+
+export function trackCustomError(errorType: string, message: string, context: Record<string, any> = {}) {
+  if (!ERROR_TRACKING_ENABLED || !ANALYTICS_ON) return;
+  
+  const errorProps = {
+    error_type: 'custom' as const,
+    error_message: message,
+    context: JSON.stringify(context),
+    timestamp: new Date().toISOString(),
+    page_path: window.location.pathname
+  };
+  
+  track('custom_error', errorProps);
+}
+            </div>
+            
+            <h4>Step 2: Update index.jsx</h4>
+            <div class="code-block">
+// Add to src/index.jsx
+import { track, trackError } from './analytics';
+
+// Add global error handlers after msalInstance declaration
+window.addEventListener('error', (event) => {
+  trackError(event.error, {
+    error_line: event.lineno,
+    error_column: event.colno,
+    error_filename: event.filename
+  });
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  trackError(new Error(event.reason), {
+    error_type: 'unhandled_promise_rejection',
+    promise_reason: event.reason
+  });
+});
+            </div>
+            
+            <h4>Step 3: Update axios.js</h4>
+            <div class="code-block">
+// Add to src/utils/axios.js
+import { trackApiError } from '../analytics';
+
+// Update the response interceptor
+axiosServices.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        // Track API errors with Freshpaint
+        if (error.config) {
+            trackApiError(
+                error, 
+                error.config.url || 'unknown', 
+                error.config.method || 'unknown'
+            );
+        }
+        
+        if (error.response?.status === 401 && !window.location.href.includes('/login')) {
+            window.location.pathname = '/login';
+        }
+        return Promise.reject((error.response && error.response.data) || 'Wrong Services');
+    }
+);
+            </div>
+            
+            <h4>Step 4: Create ErrorBoundary Component</h4>
+            <div class="code-block">
+// Create src/components/ErrorBoundary.jsx
+import React from 'react';
+import { track } from '../analytics';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Track React component errors with Freshpaint
+    track('react_component_error', {
+      error_type: 'react_component',
+      error_message: error.message,
+      error_stack: error.stack?.substring(0, 1000),
+      context: JSON.stringify({
+        component_stack: errorInfo.componentStack,
+        error_boundary: this.props.name || 'Unknown'
+      }),
+      timestamp: new Date().toISOString(),
+      page_path: window.location.pathname
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        &lt;div style={{ 
+          padding: '20px', 
+          textAlign: 'center', 
+          border: '1px solid #ff6b6b',
+          borderRadius: '8px',
+          backgroundColor: '#fff5f5',
+          margin: '20px'
+        }}&gt;
+          &lt;h2 style={{ color: '#d63031' }}&gt;Something went wrong&lt;/h2&gt;
+          &lt;p&gt;We've been notified about this error and are working to fix it.&lt;/p&gt;
+          &lt;button 
+            onClick={() => this.setState({ hasError: false, error: null })}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#667eea',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          &gt;
+            Try Again
+          &lt;/button&gt;
+        &lt;/div&gt;
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+            </div>
+            
+            <h4>Step 5: Wrap App with ErrorBoundary</h4>
+            <div class="code-block">
+// Update src/App.jsx or main component
+import ErrorBoundary from './components/ErrorBoundary';
+
+function App() {
+  return (
+    &lt;ErrorBoundary name="App"&gt;
+      {/* Your existing app content */}
+    &lt;/ErrorBoundary&gt;
+  );
+}
+            </div>
+            
+            <h4>Step 6: Add Custom Error Tracking</h4>
+            <div class="code-block">
+// Example usage in components
+import { trackCustomError } from '../analytics';
+
+// In any component or function
+const handleRiskyOperation = async (data) => {
+  try {
+    // Some risky operation
+    await processPatientData(data);
+  } catch (error) {
+    trackCustomError('data_processing', error.message, {
+      data_type: 'patient_data',
+      operation: 'processPatientData',
+      user_role: getCurrentUserRole()
+    });
+    throw error; // Re-throw if needed
+  }
+};
+            </div>
+            
+            <h4>Step 7: Test Error Tracking</h4>
+            <div class="code-block">
+// Add to any component for testing
+const testErrorTracking = () => {
+  // Test JavaScript error
+  setTimeout(() => {
+    throw new Error('Test JavaScript error');
+  }, 1000);
+  
+  // Test custom error
+  trackCustomError('test_error', 'This is a test error', {
+    test: true,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Test API error (will be caught by axios interceptor)
+  axios.get('/api/nonexistent-endpoint');
+};
+            </div>
+            
             <h3>Implementation Checklist</h3>
             <div class="highlight-box">
                 <h4>✅ Error Tracking Setup</h4>
                 <ul>
-                    <li>✅ Add global JavaScript error handlers</li>
+                    <li>✅ Update analytics.ts with error event types and functions</li>
+                    <li>✅ Add global error handlers to index.jsx</li>
                     <li>✅ Configure axios interceptor for API errors</li>
-                    <li>✅ Implement React Error Boundary</li>
-                    <li>✅ Create custom error tracking functions</li>
-                    <li>✅ Set up PHI sanitization</li>
-                    <li>✅ Configure error alerting in Freshpaint</li>
-                    <li>✅ Test error tracking in staging environment</li>
+                    <li>✅ Create and implement React Error Boundary</li>
+                    <li>✅ Wrap main app component with ErrorBoundary</li>
+                    <li>✅ Add custom error tracking functions</li>
+                    <li>✅ Test error tracking in development</li>
+                    <li>✅ Validate error events in Freshpaint dashboard</li>
+                    <li>✅ Set up error alerting in Freshpaint</li>
+                    <li>✅ Test in staging environment</li>
                     <li>✅ Validate HIPAA compliance</li>
                 </ul>
             </div>
